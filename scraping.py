@@ -14,19 +14,25 @@ def get_page(url, by_method, by_selector, timeout=10):
     elem = wait.until(EC.presence_of_element_located((by_method, by_selector)))
     return Selector(text=driver.page_source)
 
-next_page = 1
-while(next_page):
-    response = get_page(start_url, By.CLASS_NAME, "result-item")
-    urls = response.css('.title-result-item a::attr("href")').getall()
-    for url in urls:
-        response = get_page(f'{domain}{url}', By.CLASS_NAME, "page-content")
-        item = extract_item(response)
-        process_item(item)
-        break
-    break
-
 def extract_item(response):
     return {}
 
 def process_item(item):
     pass
+
+next_page = start_url
+while(1):
+    response = get_page(next_page, By.CLASS_NAME, "result-item")
+    urls = response.css('.title-result-item a::attr("href")').getall()
+    for url in urls:
+        detail = get_page(f'{domain}{url}', By.CLASS_NAME, "page-content")
+        item = extract_item(detail)
+        process_item(item)
+        break
+    next = response.css('.pager-next.txt-link a::attr("href")').get()
+    if next:
+        next_page = next
+    else:
+        break
+
+
